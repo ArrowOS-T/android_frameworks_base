@@ -65,6 +65,7 @@ public class StatusBarMobileView extends BaseStatusBarFrameLayout implements Dar
     private int mVisibleState = STATE_HIDDEN;
     private DualToneHandler mDualToneHandler;
     private boolean mForceHidden;
+    private boolean mProviderModel;
 
     /**
      * Designated constructor
@@ -80,13 +81,14 @@ public class StatusBarMobileView extends BaseStatusBarFrameLayout implements Dar
      */
     public static StatusBarMobileView fromContext(
             Context context,
-            String slot
+            String slot,
+            boolean providerModel
     ) {
         LayoutInflater inflater = LayoutInflater.from(context);
         StatusBarMobileView v = (StatusBarMobileView)
                 inflater.inflate(R.layout.status_bar_mobile_signal_group, null);
         v.setSlot(slot);
-        v.init();
+        v.init(providerModel);
         v.setVisibleState(STATE_ICON);
         return v;
     }
@@ -120,7 +122,8 @@ public class StatusBarMobileView extends BaseStatusBarFrameLayout implements Dar
         setMeasuredDimension(mMobileGroup.getMeasuredWidth(), mMobileGroup.getMeasuredHeight());
     }
 
-    private void init() {
+    private void init(boolean providerModel) {
+        mProviderModel = providerModel;
         mDualToneHandler = new DualToneHandler(getContext());
         mMobileGroup = findViewById(R.id.mobile_group);
         mMobile = findViewById(R.id.mobile_signal);
