@@ -21,6 +21,7 @@ import static android.app.admin.DevicePolicyResources.Strings.Core.RESOLVER_CANT
 import static android.app.admin.DevicePolicyResources.Strings.Core.RESOLVER_CANT_SHARE_WITH_PERSONAL;
 import static android.app.admin.DevicePolicyResources.Strings.Core.RESOLVER_CANT_SHARE_WITH_WORK;
 import static android.app.admin.DevicePolicyResources.Strings.Core.RESOLVER_CROSS_PROFILE_BLOCKED_TITLE;
+import static android.content.ContentProvider.getUriWithoutUserId;
 import static android.content.ContentProvider.getUserIdFromUri;
 import static android.stats.devicepolicy.DevicePolicyEnums.RESOLVER_EMPTY_STATE_NO_SHARING_TO_PERSONAL;
 import static android.stats.devicepolicy.DevicePolicyEnums.RESOLVER_EMPTY_STATE_NO_SHARING_TO_WORK;
@@ -39,8 +40,13 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.ActivityManager;
+<<<<<<< HEAD
 import android.app.ActivityOptions;
+=======
+import android.app.IUriGrantsManager;
+>>>>>>> 28bb611f76c5 (Verify that the caller has permissions for the icons it provided.)
 import android.app.SharedElementCallback;
+import android.app.UriGrantsManager;
 import android.app.prediction.AppPredictionContext;
 import android.app.prediction.AppPredictionManager;
 import android.app.prediction.AppPredictor;
@@ -77,6 +83,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Icon;
 import android.metrics.LogMaker;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -86,6 +93,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
 import android.os.PatternMatcher;
+import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -690,7 +698,11 @@ public class ChooserActivity extends ResolverActivity implements
                     targets = null;
                     break;
                 }
-                targets[i] = (ChooserTarget) pa[i];
+                ChooserTarget chooserTarget = (ChooserTarget) pa[i];
+                if (!hasValidIcon(chooserTarget)) {
+                    chooserTarget = removeIcon(chooserTarget);
+                }
+                targets[i] = chooserTarget;
             }
             mCallerChooserTargets = targets;
         }
@@ -4275,5 +4287,44 @@ public class ChooserActivity extends ResolverActivity implements
 
     private boolean shouldNearbyShareBeIncludedAsActionButton() {
         return !shouldNearbyShareBeFirstInRankedRow();
+    }
+
+    private boolean hasValidIcon(ChooserTarget target) {
+        Icon icon = target.getIcon();
+        if (icon == null) {
+            return true;
+        }
+        if (icon.getType() == Icon.TYPE_URI || icon.getType() == Icon.TYPE_URI_ADAPTIVE_BITMAP) {
+            Uri uri = icon.getUri();
+            try {
+                getUriGrantsManager().checkGrantUriPermission_ignoreNonSystem(
+                        getLaunchedFromUid(),
+                        getPackageName(),
+                        getUriWithoutUserId(uri),
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                        getUserIdFromUri(uri)
+                );
+            } catch (SecurityException | RemoteException e) {
+                Log.e(TAG, "Failed to get URI permission for: " + uri, e);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private IUriGrantsManager getUriGrantsManager() {
+        return UriGrantsManager.getService();
+    }
+
+    private static ChooserTarget removeIcon(ChooserTarget target) {
+        if (target == null) {
+            return null;
+        }
+        return new ChooserTarget(
+                target.getTitle(),
+                null,
+                target.getScore(),
+                target.getComponentName(),
+                target.getIntentExtras());
     }
 }
