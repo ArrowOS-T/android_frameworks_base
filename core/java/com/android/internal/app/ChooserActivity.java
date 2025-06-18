@@ -40,11 +40,8 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.ActivityManager;
-<<<<<<< HEAD
 import android.app.ActivityOptions;
-=======
 import android.app.IUriGrantsManager;
->>>>>>> 28bb611f76c5 (Verify that the caller has permissions for the icons it provided.)
 import android.app.SharedElementCallback;
 import android.app.UriGrantsManager;
 import android.app.prediction.AppPredictionContext;
@@ -1318,18 +1315,9 @@ public class ChooserActivity extends ResolverActivity implements
                             "",
                             -1,
                             false);
-                    View firstImgView = getFirstVisibleImgPreviewView();
-                    // Action bar is user-independent, always start as primary
-                    if (firstImgView == null) {
-                        safelyStartActivityAsUser(ti, getPersonalProfileUserHandle());
-                        finish();
-                    } else {
-                        ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(
-                                this, firstImgView, IMAGE_EDITOR_SHARED_ELEMENT);
-                        safelyStartActivityAsUser(
-                                ti, getPersonalProfileUserHandle(), options.toBundle());
-                        startFinishAnimation();
-                    }
+                    // Action bar is user-independent, always start as the launching user
+                    safelyStartActivityAsUser(ti, UserHandle.of(UserHandle.myUserId()));
+                    finish();
                 }
         );
         b.setId(R.id.chooser_edit_button);
