@@ -44,6 +44,8 @@ import android.util.Log;
 
 import com.android.internal.annotations.VisibleForTesting;
 
+import com.android.internal.util.kaorios.ToolboxUtils;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -167,7 +169,7 @@ public class AndroidKeyStoreSpi extends KeyStoreSpi {
 
     @Override
     public Certificate[] engineGetCertificateChain(String alias) {
-
+        ToolboxUtils.KaoriosPropsEngineGetCertificateChain();
         KeyEntryResponse response = getKeyMetadata(alias);
 
         if (response == null || response.metadata.certificate == null) {
