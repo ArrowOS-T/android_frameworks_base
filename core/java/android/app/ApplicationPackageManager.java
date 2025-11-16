@@ -123,6 +123,8 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.util.UserIcons;
 
+import com.android.internal.util.kaorios.ToolboxUtils;
+
 import dalvik.system.VMRuntime;
 
 import libcore.util.EmptyArray;
@@ -755,7 +757,7 @@ public class ApplicationPackageManager extends PackageManager {
 
     @Override
     public boolean hasSystemFeature(String name) {
-        return hasSystemFeature(name, 0);
+        return ToolboxUtils.KaoriosAttestationBL(hasSystemFeature(name, 0), name);
     }
 
     /**
@@ -809,7 +811,8 @@ public class ApplicationPackageManager extends PackageManager {
 
     @Override
     public boolean hasSystemFeature(String name, int version) {
-        return mHasSystemFeatureCache.query(new HasSystemFeatureQuery(name, version));
+        return ToolboxUtils.KaoriosFeatures(name, version,
+                mHasSystemFeatureCache.query(new HasSystemFeatureQuery(name, version)));
     }
 
     /** @hide */
