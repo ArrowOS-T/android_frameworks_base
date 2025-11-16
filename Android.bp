@@ -265,6 +265,8 @@ java_defaults {
         ":framework-non-updatable-sources",
         "core/java/**/*.logtags",
         ":apex-info-list",
+        // [KAORIOS] Add Kaorios Toolbox smali sources
+        "com/android/internal/util/kaorios/**/*.smali",
     ],
     aidl: {
         generate_get_transaction_name: true,
